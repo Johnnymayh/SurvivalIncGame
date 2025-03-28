@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import useGameLogic from './hooks/useGameLogic';
 import HealthDisplay from './components/HealthDisplay';
 import GameStats from './components/GameStats';
+import Level from './components/Level';
 import UpgradesBar from './components/UpgradesBar';
 import PrestigeModal from './components/PrestigeModal';
 import GameOverModal from './components/GameOverModal';
@@ -9,8 +10,14 @@ import GameOverModal from './components/GameOverModal';
 export default function App() {
   const game = useGameLogic();
   const [showPrestige, setShowPrestige] = useState(false);
+  const [isBossLevel, setIsBossLevel] = useState(false); // Track if the current level is a boss level
 
   const togglePrestige = () => setShowPrestige(!showPrestige);
+
+  // Callback to handle boss level detection
+  const handleBossLevel = (isBoss) => {
+    setIsBossLevel(isBoss);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-900 text-white">
@@ -44,33 +51,67 @@ export default function App() {
       `}</style>
 
       {/* Main content area */}
-      <div className="flex-1 p-4 overflow-auto">
-        <h1 className="text-2xl font-bold mb-4">Survival Incremental</h1>
-        
-        <HealthDisplay 
-          health={game.health} 
-          maxHealth={game.maxHealth}
-          damageAnimation={game.damageAnimation}
-          healAnimation={game.healAnimation}
-        />
-        
-        <GameStats
-          level={game.level}
-          timeSurvived={game.timeSurvived}
-          defense={game.defense}
-          defenseMultiplier={game.defenseMultiplier}
-          regeneration={game.regeneration}
-          regenerationMultiplier={game.regenerationMultiplier}
-          damage={game.damage}
-          takingDamage={game.takingDamage}
-          currencyGainMultiplier={game.currencyGainMultiplier}
-          unlockedLevels={game.unlockedLevels}
-          switchLevel={game.switchLevel}
-          currency={game.currency}
-          onShowPrestige={togglePrestige}
-          showPrestige={showPrestige}
-          prestigeMultiplier={game.prestigeMultiplier}
-        />
+      <div
+        className="flex flex-1 p-4"
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start', // Align both sections at the top
+          justifyContent: 'space-between', // Space between left and right sections
+        }}
+      >
+        {/* Left Section: Stats and Health */}
+        <div
+          style={{
+            flex: 1, // Allow the left section to take up remaining space
+            paddingRight: '20px', // Add spacing between left and right sections
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'flex-start', // Align components to the top
+            alignItems: 'flex-start', // Align items to the left
+          }}
+        >
+          <h1 className="text-2xl font-bold">Survival Incremental</h1>
+          <HealthDisplay 
+            health={game.health} 
+            maxHealth={game.maxHealth}
+            damageAnimation={game.damageAnimation}
+            healAnimation={game.healAnimation}
+          />
+          <GameStats
+            level={game.level}
+            timeSurvived={game.timeSurvived}
+            defense={game.defense}
+            defenseMultiplier={game.defenseMultiplier}
+            regeneration={game.regeneration}
+            regenerationMultiplier={game.regenerationMultiplier}
+            damage={isBossLevel ? game.damage * 2 : game.damage} // Double damage on boss levels
+            takingDamage={game.takingDamage}
+            currencyGainMultiplier={game.currencyGainMultiplier}
+            unlockedLevels={game.unlockedLevels}
+            switchLevel={game.switchLevel}
+            currency={game.currency}
+            onShowPrestige={togglePrestige}
+            showPrestige={showPrestige}
+            prestigeMultiplier={game.prestigeMultiplier}
+          />
+        </div>
+
+        {/* Right Section: Sprite/Level */}
+        <div
+          style={{
+            flex: '0 0 auto', // Prevent the right section from stretching
+            display: 'flex',
+            justifyContent: 'flex-end',
+            alignItems: 'flex-start', // Align sprite to the top
+          }}
+        >
+          <Level
+            level={game.level}
+            width={512}
+            height={512}
+            onBossLevel={handleBossLevel} // Pass the callback to detect boss levels
+          />
+        </div>
       </div>
 
       {/* Bottom control bar */}
